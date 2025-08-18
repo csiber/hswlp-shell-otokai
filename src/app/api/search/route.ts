@@ -25,7 +25,10 @@ export async function GET(req: Request) {
     const conditions: SQL[] = [];
     if (q) {
       const pattern = `%${q}%`;
-      conditions.push(or(like(otokaiTracksTable.title, pattern), like(otokaiTracksTable.artist, pattern)));
+      const titleMatch = like(otokaiTracksTable.title, pattern);
+      const artistMatch = like(otokaiTracksTable.artist, pattern);
+      // Non-null assertion since or() may return undefined when no conditions
+      conditions.push(or(titleMatch, artistMatch)!);
     }
     if (cursor) {
       conditions.push(lt(otokaiTracksTable.createdAt, new Date(cursor)));
@@ -50,11 +53,9 @@ export async function GET(req: Request) {
       conditions.push(eq(otokaiTagsTable.slug, tag));
     }
 
-    if (conditions.length) {
-      query = query.where(and(...conditions));
-    }
+    const finalQuery = conditions.length ? query.where(and(...conditions)!) : query;
 
-    const tracks = await query;
+    const tracks = await finalQuery;
     const nextCursor = tracks.length === limit ? tracks[tracks.length - 1].createdAt.getTime() : null;
     const data = tracks.map((t) => ({
       ...t,
