@@ -16,7 +16,11 @@ function normalizeTagName(name: string) {
   return name.trim().replace(/\s+/g, " ");
 }
 
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const { id } = await params; // TODO: sanitize id
   const session = await getSessionFromCookie();
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -25,7 +29,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
   return withRateLimit(async () => {
     const db = getDB();
     const track = await db.query.otokaiTracksTable.findFirst({
-      where: eq(otokaiTracksTable.id, params.id),
+      where: eq(otokaiTracksTable.id, id),
     });
     if (!track || track.uploadedBy !== session.user.id) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
@@ -41,7 +45,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     const [{ count }] = await db
       .select({ count: sql<number>`count(*)` })
       .from(otokaiTrackTagsTable)
-      .where(eq(otokaiTrackTagsTable.trackId, params.id));
+      .where(eq(otokaiTrackTagsTable.trackId, id));
 
     if (count + valid.length > 5) {
       return NextResponse.json({ error: "Too many tags" }, { status: 400 });
@@ -65,7 +69,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
 
       await db
         .insert(otokaiTrackTagsTable)
-        .values({ trackId: params.id, tagId: tag.id })
+        .values({ trackId: id, tagId: tag.id })
         .onConflictDoNothing();
       added.push({ name: tag.name, slug: tag.slug });
     }
