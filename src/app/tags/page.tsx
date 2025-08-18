@@ -7,7 +7,8 @@ interface Tag {
 async function fetchTags() {
   const res = await fetch("/api/tags", { cache: "no-store" });
   if (!res.ok) return { tags: [] };
-  return res.json();
+  // TODO: expand Tag type with description or color if API changes
+  return res.json() as Promise<{ tags: Tag[] }>;
 }
 
 export default async function TagsPage() {

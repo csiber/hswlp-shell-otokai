@@ -7,7 +7,8 @@ async function fetchResults(params: SearchParams) {
   const query = new URLSearchParams(params as Record<string, string>);
   const res = await fetch(`/api/search?${query.toString()}`, { cache: "no-store" });
   if (!res.ok) return { tracks: [] };
-  return res.json();
+  // Explicitly type the JSON response to avoid 'unknown' type errors
+  return res.json() as Promise<{ tracks: { id: string; title: string; artist: string | null }[]; nextCursor: number | null }>;
 }
 
 export default async function SearchPage({ searchParams }: { searchParams: Promise<SearchParams> }) {

@@ -7,7 +7,8 @@ interface Track {
 async function fetchTracks(slug: string) {
   const res = await fetch(`/api/tag/${slug}/tracks`, { cache: "no-store" });
   if (!res.ok) return { tracks: [] };
-  return res.json();
+  // Explicitly type the response to ensure proper type inference
+  return res.json() as Promise<{ tracks: Track[] }>;
 }
 
 export default async function TagPage({
