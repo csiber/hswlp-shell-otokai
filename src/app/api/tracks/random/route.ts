@@ -14,7 +14,10 @@ export async function GET() {
     .limit(1);
 
   if (!track) {
-    return NextResponse.json({ error: "No tracks" }, { status: 404 });
+    // No tracks in the database yet; return 204 instead of 404 to avoid
+    // treating this as a missing endpoint.
+    // TODO: Consider returning a helpful message or placeholder track later.
+    return new Response(null, { status: 204 });
   }
 
   const shareSlug = await ensureTrackShareSlug(db, track);
