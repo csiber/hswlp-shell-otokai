@@ -10,11 +10,13 @@ declare namespace Cloudflare {
 		EMAIL_REPLY_TO: "support@hswlp.hu";
 		NEXTJS_ENV: string;
 		hswlp_r2: R2Bucket;
-		DB: D1Database;
-		NEXT_TAG_CACHE_D1: D1Database;
-		WORKER_SELF_REFERENCE: Fetcher /* hswlp-shell-otokai */;
-		ASSETS: Fetcher;
-	}
+                DB: D1Database;
+                NEXT_TAG_CACHE_D1: D1Database;
+                WORKER_SELF_REFERENCE: Fetcher /* hswlp-shell-otokai */;
+                ASSETS: Fetcher;
+                OTOKAI_MAX_PLAYLISTS?: string;
+                OTOKAI_MAX_PLAYLIST_ITEMS?: string;
+        }
 }
 interface CloudflareEnv extends Cloudflare.Env {}
 
