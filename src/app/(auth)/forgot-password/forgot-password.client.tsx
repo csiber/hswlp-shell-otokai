@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
+import type { Route } from "next"; // import Route for typed navigation
 import { forgotPasswordAction } from "./forgot-password.action";
 import { useServerAction } from "zsa-react";
 import { toast } from "sonner";
@@ -136,7 +137,7 @@ export default function ForgotPasswordClientComponent() {
             type="button"
             variant="link"
             className="w-full"
-            onClick={() => router.push("/settings")}
+            onClick={() => router.push("/settings" as Route)} // TODO: update when actual settings route is fleshed out
           >
             Back to settings
           </Button>
