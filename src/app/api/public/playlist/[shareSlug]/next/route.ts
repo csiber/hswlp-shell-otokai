@@ -8,7 +8,11 @@ import {
 import { eq, and, asc } from "drizzle-orm";
 
 // Következő track lekérése a publikus playlistből
-export async function GET(req: Request, { params }: { params: { shareSlug: string } }) {
+export async function GET(
+  req: Request,
+  { params }: { params: Promise<{ shareSlug: string }> },
+) {
+  const { shareSlug } = await params; // TODO: sanitize slug
   const { searchParams } = new URL(req.url);
   const current = searchParams.get("current");
   const db = getDB();
@@ -18,8 +22,8 @@ export async function GET(req: Request, { params }: { params: { shareSlug: strin
     .from(otokaiPlaylistsTable)
     .where(
       and(
-        eq(otokaiPlaylistsTable.shareSlug, params.shareSlug),
-        eq(otokaiPlaylistsTable.isPublic, 1),
+        eq(otokaiPlaylistsTable.shareSlug, shareSlug),
+        eq(otokaiPlaylistsTable.isPublic, true),
       ),
     )
     .limit(1);

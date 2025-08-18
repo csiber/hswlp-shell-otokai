@@ -8,15 +8,19 @@ import {
 import { eq, and, asc } from "drizzle-orm";
 
 // Publikus playlist lekérése share_slug alapján
-export async function GET(req: Request, { params }: { params: { shareSlug: string } }) {
+export async function GET(
+  req: Request,
+  { params }: { params: Promise<{ shareSlug: string }> },
+) {
+  const { shareSlug } = await params; // TODO: sanitize slug
   const db = getDB();
   const [playlist] = await db
     .select()
     .from(otokaiPlaylistsTable)
     .where(
       and(
-        eq(otokaiPlaylistsTable.shareSlug, params.shareSlug),
-        eq(otokaiPlaylistsTable.isPublic, 1),
+        eq(otokaiPlaylistsTable.shareSlug, shareSlug),
+        eq(otokaiPlaylistsTable.isPublic, true),
       ),
     )
     .limit(1);
