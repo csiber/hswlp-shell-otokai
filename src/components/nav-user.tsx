@@ -1,22 +1,15 @@
 "use client"
 
-import {
-  BadgeCheck,
-  Bell,
-  ChevronsUpDown,
-  LogOut,
-} from "lucide-react"
+import { ChevronsUpDown, LogOut } from "lucide-react"
 
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
 } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -84,9 +77,6 @@ export function NavUser() {
               <div className="grid flex-1 gap-0.5 text-left text-sm leading-tight">
                 <span className="font-semibold overflow-hidden text-ellipsis whitespace-nowrap">{displayName}</span>
                 <span className="truncate text-xs text-muted-foreground">{user.email}</span>
-                <Badge variant="secondary" className="w-fit text-[10px]">
-                  {user.currentCredits} credits
-                </Badge>
               </div>
               <ChevronsUpDown className="ml-auto size-4" />
             </SidebarMenuButton>
@@ -106,9 +96,6 @@ export function NavUser() {
                 <div className="grid flex-1 gap-0.5 text-left text-sm leading-tight">
                   <span className="font-semibold">{displayName}</span>
                   <span className="truncate text-xs text-muted-foreground">{user.email}</span>
-                  <Badge variant="secondary" className="w-fit text-[10px]">
-                    {user.currentCredits} kredit
-                  </Badge>
                 </div>
               </div>
             </DropdownMenuLabel>
@@ -117,16 +104,6 @@ export function NavUser() {
                 Toggle theme
               </ThemeSwitch>
             </div>
-            <DropdownMenuGroup>
-              <DropdownMenuItem className="cursor-pointer" onClick={() => router.push('/settings')}>
-                <BadgeCheck />
-                Account
-              </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer">
-                <Bell />
-                Notifications
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => {
