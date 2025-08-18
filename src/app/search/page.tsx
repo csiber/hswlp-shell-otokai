@@ -10,14 +10,15 @@ async function fetchResults(params: SearchParams) {
   return res.json();
 }
 
-export default async function SearchPage({ searchParams }: { searchParams: SearchParams }) {
-  const data = await fetchResults(searchParams);
+export default async function SearchPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
+  const params = await searchParams;
+  const data = await fetchResults(params);
   return (
     <div className="p-4 space-y-4">
       <form className="space-x-2">
         <input
           name="q"
-          defaultValue={searchParams.q || ""}
+          defaultValue={params.q || ""}
           placeholder="Search"
           className="border p-2"
         />

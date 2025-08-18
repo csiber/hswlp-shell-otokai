@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getDB } from "@/db";
 import { otokaiTracksTable } from "@/db/otokai";
 import { desc, lt } from "drizzle-orm";
+import { ensureTrackShareSlug } from "@/utils/track-share-slug";
 
 const DEFAULT_LIMIT = 20;
 
@@ -14,12 +15,14 @@ export async function GET(req: Request) {
 
   const db = getDB();
   const where = cursor ? lt(otokaiTracksTable.createdAt, new Date(cursor)) : undefined;
-  const tracks = await db
+  const raw = await db
     .select()
     .from(otokaiTracksTable)
     .where(where)
     .orderBy(desc(otokaiTracksTable.createdAt))
     .limit(limit);
+
+  const tracks = await Promise.all(raw.map((t) => ensureTrackShareSlug(db, t).then((slug) => ({ ...t, shareSlug: slug }))));
 
   const nextCursor = tracks.length === limit ? tracks[tracks.length - 1].createdAt.getTime() : null;
 

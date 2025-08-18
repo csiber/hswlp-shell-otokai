@@ -3,6 +3,8 @@ import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { getDB } from "@/db";
 import { otokaiTracksTable } from "@/db/otokai";
 import { requireVerifiedEmail } from "@/utils/auth";
+import { createTrackShareSlug } from "@/utils/track-share-slug";
+import { createId } from "@paralleldrive/cuid2";
 
 const MAX_SIZE = 25 * 1024 * 1024; // 25MB
 const ALLOWED_TYPES = ["audio/mpeg", "audio/ogg"];
@@ -38,14 +40,18 @@ export async function POST(req: Request) {
   await env.hswlp_r2.put(key, file.stream());
 
   const db = getDB();
+  const id = createId();
+  const shareSlug = await createTrackShareSlug(db, title, artist, id);
   await db.insert(otokaiTracksTable).values({
+    id,
     r2Key: key,
     title,
     artist,
     coverUrl,
+    shareSlug,
     uploadedBy: session.user.id,
     createdAt: new Date(),
   });
 
-  return NextResponse.json({ success: true, track: { r2Key: key, title, artist, coverUrl } });
+  return NextResponse.json({ success: true, track: { id, r2Key: key, title, artist, coverUrl, shareSlug } });
 }
