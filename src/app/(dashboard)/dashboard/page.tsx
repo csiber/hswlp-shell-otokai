@@ -8,6 +8,10 @@ interface Track {
   artist: string | null;
 }
 
+interface FavoritesResponse {
+  favorites: Track[]; // TODO: extend if the API returns more fields
+}
+
 export default function DashboardPage() {
   const [favorites, setFavorites] = useState<Track[]>([]);
   const [file, setFile] = useState<File | null>(null);
@@ -18,7 +22,7 @@ export default function DashboardPage() {
   const loadFavorites = async () => {
     const res = await fetch("/api/me/favorites");
     if (res.ok) {
-      const data = await res.json();
+      const data: FavoritesResponse = await res.json();
       setFavorites(data.favorites);
     }
   };
