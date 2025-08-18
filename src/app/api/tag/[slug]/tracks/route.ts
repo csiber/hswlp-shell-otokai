@@ -8,9 +8,13 @@ import {
 import { eq, and, desc, lt } from "drizzle-orm";
 
 const DEFAULT_LIMIT = 20;
+// TODO: This limit could be configurable in the future
 
-export async function GET(req: Request, { params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params; // TODO: sanitize slug
+export async function GET(
+  req: Request,
+  context: { params: Promise<{ slug: string }> }
+) {
+  const { slug } = await context.params;
   const { searchParams } = new URL(req.url);
   const limitParam = Number(searchParams.get("limit"));
   const limit = !isNaN(limitParam) && limitParam > 0 && limitParam <= DEFAULT_LIMIT ? limitParam : DEFAULT_LIMIT;
