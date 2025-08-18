@@ -24,7 +24,8 @@ function getLocalD1DB() {
 
 export default defineConfig({
   out: './src/db/migrations',
-  schema: './src/db/schema.ts',
+  // Include Otokai-specific tables alongside the base schema
+  schema: ['./src/db/schema.ts', './src/db/otokai.ts'],
   dialect: 'sqlite',
   ...(process.env.NODE_ENV === "production"
     ? {

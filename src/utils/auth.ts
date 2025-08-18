@@ -21,7 +21,6 @@ import { cache } from "react"
 import type { SessionValidationResult } from "@/types";
 import { SESSION_COOKIE_NAME } from "@/constants";
 import { ZSAError } from "zsa";
-import { addFreeMonthlyCreditsIfNeeded } from "./credits";
 import { getInitials } from "./name-initials";
 
 const getSessionLength = () => {
@@ -150,17 +149,6 @@ async function validateSessionToken(token: string, userId: string): Promise<Sess
     updatedSession.user.initials = getInitials(updatedSession.user.nickname || `${updatedSession.user.firstName} ${updatedSession.user.lastName}`);
 
     return updatedSession;
-  }
-
-  // Check and refresh credits if needed
-  const currentCredits = await addFreeMonthlyCreditsIfNeeded(session);
-
-  // If credits were refreshed, update the session
-  if (
-    session?.user?.currentCredits &&
-    currentCredits !== session.user.currentCredits
-  ) {
-    session.user.currentCredits = currentCredits;
   }
 
   // Update the user initials

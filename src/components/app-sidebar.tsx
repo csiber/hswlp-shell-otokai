@@ -3,14 +3,7 @@
 import { type ComponentType } from "react"
 import type { Route } from 'next'
 
-import {
-  Rocket,
-  Frame,
-  Map,
-  PieChart,
-  Settings2,
-  SquareTerminal,
-} from "lucide-react"
+import { Rocket, SquareTerminal } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
 import { NavProjects } from "@/components/nav-projects"
@@ -65,47 +58,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         icon: SquareTerminal,
         isActive: true,
       },
-      {
-        title: "Settings",
-        url: "/settings",
-        icon: Settings2,
-        items: [
-          {
-            title: "Profile",
-            url: "/settings",
-          },
-          {
-            title: "Security",
-            url: "/settings/security",
-          },
-          {
-            title: "Sessions",
-            url: "/settings/sessions",
-          },
-          {
-            title: "Change Password",
-            url: "/forgot-password",
-          },
-        ],
-      },
     ],
-    projects: [
-      {
-        title: "Design Engineering",
-        url: "#",
-        icon: Frame,
-      },
-      {
-        title: "Sales & Marketing",
-        url: "#",
-        icon: PieChart,
-      },
-      {
-        title: "Travel",
-        url: "#",
-        icon: Map,
-      },
-    ],
+    projects: [],
   }
 
   return (
