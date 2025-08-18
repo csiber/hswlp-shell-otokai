@@ -9,7 +9,8 @@ import { eq, and, desc, lt } from "drizzle-orm";
 
 const DEFAULT_LIMIT = 20;
 
-export async function GET(req: Request, { params }: { params: { slug: string } }) {
+export async function GET(req: Request, { params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params; // TODO: sanitize slug
   const { searchParams } = new URL(req.url);
   const limitParam = Number(searchParams.get("limit"));
   const limit = !isNaN(limitParam) && limitParam > 0 && limitParam <= DEFAULT_LIMIT ? limitParam : DEFAULT_LIMIT;
@@ -17,7 +18,7 @@ export async function GET(req: Request, { params }: { params: { slug: string } }
   const cursor = cursorParam ? Number(cursorParam) : undefined;
 
   const db = getDB();
-  const conditions = [eq(otokaiTagsTable.slug, params.slug)];
+  const conditions = [eq(otokaiTagsTable.slug, slug)];
   if (cursor) {
     conditions.push(lt(otokaiTracksTable.createdAt, new Date(cursor)));
   }

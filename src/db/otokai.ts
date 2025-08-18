@@ -10,6 +10,7 @@ export const otokaiTracksTable = sqliteTable("otokai_tracks", {
   artist: text({ length: 255 }),
   durationSec: integer(),
   coverUrl: text({ length: 600 }),
+  shareSlug: text().unique(),
   uploadedBy: text({ length: 255 }),
   createdAt: integer({ mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
 });

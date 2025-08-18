@@ -16,6 +16,14 @@ const nextConfig = {
   },
   typescript: {
     ignoreBuildErrors: process.env.SKIP_LINTER === 'true'
+  },
+  async headers() {
+    return [
+      {
+        source: "/e/:slug*",
+        headers: [{ key: "Content-Security-Policy", value: "frame-ancestors *" }],
+      },
+    ];
   }
 };
 

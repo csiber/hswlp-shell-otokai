@@ -6,6 +6,7 @@ import {
   otokaiTracksTable,
 } from "@/db/otokai";
 import { eq, and, asc } from "drizzle-orm";
+import { ensureTrackShareSlug } from "@/utils/track-share-slug";
 
 // Következő track lekérése a publikus playlistből
 export async function GET(
@@ -31,7 +32,7 @@ export async function GET(
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const items = await db
+  const raw = await db
     .select({
       trackId: otokaiPlaylistItemsTable.trackId,
       track: otokaiTracksTable,
@@ -43,6 +44,13 @@ export async function GET(
     )
     .where(eq(otokaiPlaylistItemsTable.playlistId, playlist.id))
     .orderBy(asc(otokaiPlaylistItemsTable.position));
+
+  const items = await Promise.all(
+    raw.map(async (item) => ({
+      trackId: item.trackId,
+      track: { ...item.track, shareSlug: await ensureTrackShareSlug(db, item.track) },
+    })),
+  );
 
   if (items.length === 0) {
     return NextResponse.json({ error: "Empty playlist" }, { status: 404 });
