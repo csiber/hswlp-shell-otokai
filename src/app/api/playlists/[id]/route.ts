@@ -28,14 +28,18 @@ async function getOwnedPlaylist(db: ReturnType<typeof getDB>, id: string, userId
 }
 
 // Saját playlist meta + tételek
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const { id } = await params; // TODO: validate playlist ID
   const session = await getSessionFromCookie();
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const db = getDB();
-  const playlist = await getOwnedPlaylist(db, params.id, session.user.id);
+  const playlist = await getOwnedPlaylist(db, id, session.user.id);
   if (!playlist) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
@@ -58,19 +62,26 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
 }
 
 // Playlist módosítása
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const { id } = await params; // TODO: reuse validation logic
   const session = await getSessionFromCookie();
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const db = getDB();
-  const playlist = await getOwnedPlaylist(db, params.id, session.user.id);
+  const playlist = await getOwnedPlaylist(db, id, session.user.id);
   if (!playlist) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const body = await req.json().catch(() => ({}));
+  const body = (await req.json().catch(() => ({}))) as {
+    title?: string;
+    is_public?: number;
+  }; // TODO: refine schema validation
   const updates: Record<string, unknown> = {};
   if (typeof body.title === "string" && body.title.trim()) {
     updates.title = body.title.trim();
@@ -96,14 +107,18 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
 }
 
 // Playlist törlése a tételekkel együtt
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const { id } = await params; // TODO: consolidate ID checks
   const session = await getSessionFromCookie();
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const db = getDB();
-  const playlist = await getOwnedPlaylist(db, params.id, session.user.id);
+  const playlist = await getOwnedPlaylist(db, id, session.user.id);
   if (!playlist) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }

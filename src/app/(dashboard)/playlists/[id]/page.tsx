@@ -8,7 +8,12 @@ import {
 import { eq, and, asc } from "drizzle-orm";
 
 // Single playlist view with items
-export default async function PlaylistPage({ params }: { params: { id: string } }) {
+export default async function PlaylistPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params; // TODO: validate playlist ID format
   const session = await getSessionFromCookie();
   if (!session) {
     return <div className="p-4">Please sign in.</div>;
@@ -17,7 +22,12 @@ export default async function PlaylistPage({ params }: { params: { id: string } 
   const [playlist] = await db
     .select()
     .from(otokaiPlaylistsTable)
-    .where(and(eq(otokaiPlaylistsTable.id, params.id), eq(otokaiPlaylistsTable.userId, session.user.id)))
+    .where(
+      and(
+        eq(otokaiPlaylistsTable.id, id),
+        eq(otokaiPlaylistsTable.userId, session.user.id),
+      ),
+    )
     .limit(1);
   if (!playlist) {
     return <div className="p-4">Playlist not found</div>;

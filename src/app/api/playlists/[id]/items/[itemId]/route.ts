@@ -8,7 +8,11 @@ import {
 import { eq, and, asc } from "drizzle-orm";
 
 // Tétel törlése és újrapozicionálás
-export async function DELETE(req: Request, { params }: { params: { id: string; itemId: string } }) {
+export async function DELETE(
+  req: Request,
+  { params }: { params: Promise<{ id: string; itemId: string }> },
+) {
+  const { id, itemId } = await params; // TODO: validate IDs
   const session = await getSessionFromCookie();
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -18,7 +22,12 @@ export async function DELETE(req: Request, { params }: { params: { id: string; i
   const [playlist] = await db
     .select()
     .from(otokaiPlaylistsTable)
-    .where(and(eq(otokaiPlaylistsTable.id, params.id), eq(otokaiPlaylistsTable.userId, session.user.id)))
+    .where(
+      and(
+        eq(otokaiPlaylistsTable.id, id),
+        eq(otokaiPlaylistsTable.userId, session.user.id),
+      ),
+    )
     .limit(1);
   if (!playlist) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -26,7 +35,12 @@ export async function DELETE(req: Request, { params }: { params: { id: string; i
 
   await db
     .delete(otokaiPlaylistItemsTable)
-    .where(and(eq(otokaiPlaylistItemsTable.id, params.itemId), eq(otokaiPlaylistItemsTable.playlistId, playlist.id)));
+    .where(
+      and(
+        eq(otokaiPlaylistItemsTable.id, itemId),
+        eq(otokaiPlaylistItemsTable.playlistId, playlist.id),
+      ),
+    );
 
   // Resequence positions
   const items = await db

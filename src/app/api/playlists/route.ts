@@ -12,7 +12,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const body = await req.json().catch(() => null);
+  const body = (await req.json().catch(() => null)) as { title?: string } | null; // TODO: validate body schema
   const title = body?.title?.trim();
   if (!title) {
     return NextResponse.json({ error: "Missing title" }, { status: 400 });

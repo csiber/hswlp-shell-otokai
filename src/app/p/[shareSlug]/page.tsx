@@ -7,12 +7,22 @@ import {
 import { eq, and, asc } from "drizzle-orm";
 
 // Public playlist page
-export default async function PublicPlaylistPage({ params }: { params: { shareSlug: string } }) {
+export default async function PublicPlaylistPage({
+  params,
+}: {
+  params: Promise<{ shareSlug: string }>;
+}) {
+  const { shareSlug } = await params; // TODO: sanitize shareSlug before use
   const db = getDB();
   const [playlist] = await db
     .select()
     .from(otokaiPlaylistsTable)
-    .where(and(eq(otokaiPlaylistsTable.shareSlug, params.shareSlug), eq(otokaiPlaylistsTable.isPublic, 1)))
+    .where(
+      and(
+        eq(otokaiPlaylistsTable.shareSlug, shareSlug),
+        eq(otokaiPlaylistsTable.isPublic, true),
+      ),
+    )
     .limit(1);
   if (!playlist) {
     return <div className="p-4">Playlist not found</div>;

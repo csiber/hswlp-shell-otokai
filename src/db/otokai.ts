@@ -45,7 +45,7 @@ export const otokaiPlaylistsTable = sqliteTable("otokai_playlists", {
   id: text().primaryKey().$defaultFn(() => createId()).notNull(),
   userId: text().notNull(),
   title: text({ length: 255 }).notNull(),
-  isPublic: integer({ mode: "boolean" }).default(0).notNull(),
+  isPublic: integer({ mode: "boolean" }).default(false).notNull(),
   shareSlug: text().unique(),
   createdAt: integer({ mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
   updatedAt: integer({ mode: "timestamp" }).notNull().$onUpdateFn(() => new Date()),

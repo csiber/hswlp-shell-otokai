@@ -9,7 +9,11 @@ import { eq, and, sql } from "drizzle-orm";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 
 // Track hozzáadása a playlisthez
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const { id } = await params; // TODO: validate playlist ID
   const session = await getSessionFromCookie();
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -19,13 +23,20 @@ export async function POST(req: Request, { params }: { params: { id: string } })
   const [playlist] = await db
     .select()
     .from(otokaiPlaylistsTable)
-    .where(and(eq(otokaiPlaylistsTable.id, params.id), eq(otokaiPlaylistsTable.userId, session.user.id)))
+    .where(
+      and(
+        eq(otokaiPlaylistsTable.id, id),
+        eq(otokaiPlaylistsTable.userId, session.user.id),
+      ),
+    )
     .limit(1);
   if (!playlist) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const body = await req.json().catch(() => null);
+  const body = (await req.json().catch(() => null)) as
+    | { track_id?: string }
+    | null; // TODO: define body type
   const trackId = body?.track_id;
   if (!trackId) {
     return NextResponse.json({ error: "Missing track_id" }, { status: 400 });
