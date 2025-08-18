@@ -27,7 +27,8 @@ export async function GET(req: Request, context: unknown) {
   };
 
   if (range && object.range) {
-    const { offset, length } = object.range;
+    const { offset, length } = object.range as { offset: number; length: number };
+    // TODO: replace type assertion once Cloudflare provides proper R2Range typings
     headers["Content-Range"] = `bytes ${offset}-${offset + length - 1}/${object.size}`;
     return new NextResponse(object.body, { status: 206, headers });
   }
