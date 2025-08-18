@@ -2,99 +2,23 @@
 
 import { signInAction } from "./sign-in.actions";
 import { type SignInSchema, signInSchema } from "@/schemas/signin.schema";
-import { type ReactNode, useState } from "react";
 
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import SeparatorWithText from "@/components/separator-with-text";
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { useServerAction } from "zsa-react";
 import Link from "next/link";
-import { KeyIcon } from "lucide-react";
-import { generateAuthenticationOptionsAction, verifyAuthenticationAction } from "@/app/(settings)/settings/security/passkey-settings.actions";
-import { startAuthentication } from "@simplewebauthn/browser";
-import type { PublicKeyCredentialRequestOptionsJSON } from "@simplewebauthn/types";
 
 interface SignInClientProps {
   redirectPath: string;
 }
 
-interface PasskeyAuthenticationButtonProps {
-  className?: string;
-  disabled?: boolean;
-  children?: ReactNode;
-  redirectPath: string;
-}
 
-function PasskeyAuthenticationButton({ className, disabled, children, redirectPath }: PasskeyAuthenticationButtonProps) {
-  const { execute: generateOptions } = useServerAction(generateAuthenticationOptionsAction, {
-    onError: (error) => {
-      toast.dismiss();
-        toast.error(error.err?.message || "Failed to retrieve authentication options");
-    },
-  });
-
-  const { execute: verifyAuthentication } = useServerAction(verifyAuthenticationAction, {
-    onError: (error) => {
-      toast.dismiss();
-        toast.error(error.err?.message || "Authentication failed");
-    },
-    onSuccess: () => {
-      toast.dismiss();
-        toast.success("Authentication successful");
-      window.location.href = redirectPath;
-    },
-  });
-
-  const [isAuthenticating, setIsAuthenticating] = useState(false);
-
-  const handleAuthenticate = async () => {
-    try {
-      setIsAuthenticating(true);
-        toast.loading("Authenticating with passkey...");
-
-      // Get authentication options from the server
-      const [result] = await generateOptions({});
-
-      const options = result?.optionsJSON as PublicKeyCredentialRequestOptionsJSON | undefined;
-
-      if (!options) {
-          throw new Error("Failed to retrieve authentication options");
-      }
-
-      // Start the authentication process in the browser
-      const authenticationResponse = await startAuthentication({
-        optionsJSON: options,
-      });
-
-      // Send the response back to the server for verification
-      await verifyAuthentication({
-        response: authenticationResponse,
-        challenge: options.challenge,
-      });
-    } catch (error) {
-        console.error("Passkey authentication error:", error);
-        toast.dismiss();
-        toast.error("Authentication failed");
-    } finally {
-      setIsAuthenticating(false);
-    }
-  };
-
-  return (
-    <Button
-      onClick={handleAuthenticate}
-      disabled={isAuthenticating || disabled}
-      className={className}
-    >
-      {isAuthenticating ? "Authenticating..." : children || "Sign in with Passkey"}
-    </Button>
-  );
-}
+// TODO: Reintroduce passkey authentication once server actions are available
 
 const SignInPage = ({ redirectPath }: SignInClientProps) => {
   const { execute: signIn } = useServerAction(signInAction, {
@@ -134,17 +58,8 @@ const SignInPage = ({ redirectPath }: SignInClientProps) => {
           </p>
         </div>
 
-        <div className="space-y-4">
 
-          <PasskeyAuthenticationButton className="w-full" redirectPath={redirectPath}>
-            <KeyIcon className="w-5 h-5 mr-2" />
-              Sign in with Passkey
-          </PasskeyAuthenticationButton>
-        </div>
-
-          <SeparatorWithText>
-            <span className="uppercase text-muted-foreground">Or</span>
-          </SeparatorWithText>
+        {/* TODO: Add alternative sign-in methods (e.g., passkey) here */}
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="mt-8 space-y-6">
