@@ -85,6 +85,13 @@
       "when": 1755498427700,
       "tag": "0011_otokai_tables",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "6",
+      "when": 1756000000000,
+      "tag": "0012_otokai_playlists",
+      "breakpoints": true
     }
   ]
 }

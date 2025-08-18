@@ -10,11 +10,13 @@ declare namespace Cloudflare {
 		EMAIL_REPLY_TO: "support@hswlp.hu";
 		JWT_SECRET: "J39sUxv9cvxqbiZDRfLoIGVYh3OcPK5Eq5zzT+eLq9tTyKX7j8pNR3p+E/OnswGZ8NWxKdfmrA1LZK1APpT7Hg==";
 		hswlp_r2: R2Bucket;
-		DB: D1Database;
-		NEXT_TAG_CACHE_D1: D1Database;
-		WORKER_SELF_REFERENCE: Fetcher /* hswlp-shell-otokai */;
-		ASSETS: Fetcher;
-	}
+                DB: D1Database;
+                NEXT_TAG_CACHE_D1: D1Database;
+                WORKER_SELF_REFERENCE: Fetcher /* hswlp-shell-otokai */;
+                ASSETS: Fetcher;
+                OTOKAI_MAX_PLAYLISTS?: string;
+                OTOKAI_MAX_PLAYLIST_ITEMS?: string;
+        }
 }
 interface Env extends Cloudflare.Env {}
 

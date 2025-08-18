@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, uniqueIndex } from "drizzle-orm/sqlite-core";
+import { sqliteTable, text, integer, uniqueIndex, index } from "drizzle-orm/sqlite-core";
 import { relations } from "drizzle-orm";
 import { createId } from "@paralleldrive/cuid2";
 
@@ -40,5 +40,49 @@ export const otokaiFavoritesRelations = relations(otokaiFavoritesTable, ({ one }
   }),
 }));
 
+// Playlist tables
+export const otokaiPlaylistsTable = sqliteTable("otokai_playlists", {
+  id: text().primaryKey().$defaultFn(() => createId()).notNull(),
+  userId: text().notNull(),
+  title: text({ length: 255 }).notNull(),
+  isPublic: integer({ mode: "boolean" }).default(0).notNull(),
+  shareSlug: text().unique(),
+  createdAt: integer({ mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
+  updatedAt: integer({ mode: "timestamp" }).notNull().$onUpdateFn(() => new Date()),
+});
+
+export const otokaiPlaylistItemsTable = sqliteTable(
+  "otokai_playlist_items",
+  {
+    id: text().primaryKey().$defaultFn(() => createId()).notNull(),
+    playlistId: text().notNull().references(() => otokaiPlaylistsTable.id),
+    trackId: text().notNull().references(() => otokaiTracksTable.id),
+    position: integer().notNull(),
+    addedAt: integer({ mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
+  },
+  (table) => [
+    uniqueIndex("opl_items_playlist_track_unique").on(table.playlistId, table.trackId),
+    index("opl_items_playlist_position_idx").on(table.playlistId, table.position),
+  ],
+);
+
+// Playlist relations
+export const otokaiPlaylistsRelations = relations(otokaiPlaylistsTable, ({ many }) => ({
+  items: many(otokaiPlaylistItemsTable),
+}));
+
+export const otokaiPlaylistItemsRelations = relations(otokaiPlaylistItemsTable, ({ one }) => ({
+  playlist: one(otokaiPlaylistsTable, {
+    fields: [otokaiPlaylistItemsTable.playlistId],
+    references: [otokaiPlaylistsTable.id],
+  }),
+  track: one(otokaiTracksTable, {
+    fields: [otokaiPlaylistItemsTable.trackId],
+    references: [otokaiTracksTable.id],
+  }),
+}));
+
 export type OtokaiTrack = typeof otokaiTracksTable.$inferSelect;
 export type OtokaiFavorite = typeof otokaiFavoritesTable.$inferSelect;
+export type OtokaiPlaylist = typeof otokaiPlaylistsTable.$inferSelect;
+export type OtokaiPlaylistItem = typeof otokaiPlaylistItemsTable.$inferSelect;
