@@ -10,11 +10,16 @@ async function fetchTracks(slug: string) {
   return res.json();
 }
 
-export default async function TagPage({ params }: { params: { slug: string } }) {
-  const data = await fetchTracks(params.slug);
+export default async function TagPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params; // TODO: sanitize slug before use
+  const data = await fetchTracks(slug);
   return (
     <div className="p-4 space-y-4">
-      <h1 className="text-xl font-bold">Tag: {params.slug}</h1>
+      <h1 className="text-xl font-bold">Tag: {slug}</h1>
       <ul className="space-y-1">
         {data.tracks.map((t: Track) => (
           <li key={t.id}>
