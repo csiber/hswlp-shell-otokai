@@ -4,14 +4,19 @@ import { getDB } from "@/db";
 import { otokaiFavoritesTable } from "@/db/otokai";
 import { requireVerifiedEmail } from "@/utils/auth";
 
+interface ToggleFavoritesBody {
+  track_id?: string;
+  // TODO: extend with additional fields when expanding favorites API
+}
+
 export async function POST(req: Request) {
   const session = await requireVerifiedEmail();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const body = await req.json();
-  const trackId = body?.track_id as string | undefined;
+  const body: ToggleFavoritesBody = await req.json();
+  const trackId = body.track_id;
   if (!trackId) {
     return NextResponse.json({ error: "track_id required" }, { status: 400 });
   }
