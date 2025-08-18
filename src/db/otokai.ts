@@ -14,6 +14,29 @@ export const otokaiTracksTable = sqliteTable("otokai_tracks", {
   createdAt: integer({ mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
 });
 
+// Tag definitions for tracks
+export const otokaiTagsTable = sqliteTable("otokai_tags", {
+  id: text().primaryKey().$defaultFn(() => createId()).notNull(),
+  name: text({ length: 64 }).notNull(),
+  slug: text({ length: 80 }).notNull().unique(),
+  createdAt: integer({ mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
+});
+
+export const otokaiTrackTagsTable = sqliteTable(
+  "otokai_track_tags",
+  {
+    id: text().primaryKey().$defaultFn(() => createId()).notNull(),
+    trackId: text().notNull().references(() => otokaiTracksTable.id),
+    tagId: text().notNull().references(() => otokaiTagsTable.id),
+    createdAt: integer({ mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
+  },
+  (table) => [
+    uniqueIndex("ott_track_tag_unique").on(table.trackId, table.tagId),
+    index("ott_track_idx").on(table.trackId),
+    index("ott_tag_idx").on(table.tagId),
+  ],
+);
+
 // User track favorites (likes)
 export const otokaiFavoritesTable = sqliteTable(
   "otokai_favorites",
@@ -31,12 +54,28 @@ export const otokaiFavoritesTable = sqliteTable(
 // Relations
 export const otokaiTracksRelations = relations(otokaiTracksTable, ({ many }) => ({
   favorites: many(otokaiFavoritesTable),
+  tags: many(otokaiTrackTagsTable),
 }));
 
 export const otokaiFavoritesRelations = relations(otokaiFavoritesTable, ({ one }) => ({
   track: one(otokaiTracksTable, {
     fields: [otokaiFavoritesTable.trackId],
     references: [otokaiTracksTable.id],
+  }),
+}));
+
+export const otokaiTagsRelations = relations(otokaiTagsTable, ({ many }) => ({
+  trackTags: many(otokaiTrackTagsTable),
+}));
+
+export const otokaiTrackTagsRelations = relations(otokaiTrackTagsTable, ({ one }) => ({
+  track: one(otokaiTracksTable, {
+    fields: [otokaiTrackTagsTable.trackId],
+    references: [otokaiTracksTable.id],
+  }),
+  tag: one(otokaiTagsTable, {
+    fields: [otokaiTrackTagsTable.tagId],
+    references: [otokaiTagsTable.id],
   }),
 }));
 
@@ -86,3 +125,5 @@ export type OtokaiTrack = typeof otokaiTracksTable.$inferSelect;
 export type OtokaiFavorite = typeof otokaiFavoritesTable.$inferSelect;
 export type OtokaiPlaylist = typeof otokaiPlaylistsTable.$inferSelect;
 export type OtokaiPlaylistItem = typeof otokaiPlaylistItemsTable.$inferSelect;
+export type OtokaiTag = typeof otokaiTagsTable.$inferSelect;
+export type OtokaiTrackTag = typeof otokaiTrackTagsTable.$inferSelect;

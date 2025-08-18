@@ -107,4 +107,14 @@ export const RATE_LIMITS = {
     limit: 20,
     windowInSeconds: Math.floor(ms("10 minutes") / 1000),
   },
+  SEARCH: {
+    identifier: "search",
+    limit: 120,
+    windowInSeconds: Math.floor(ms("1 hour") / 1000),
+  },
+  TAG_WRITE: {
+    identifier: "tag-write",
+    limit: 30,
+    windowInSeconds: Math.floor(ms("1 hour") / 1000),
+  },
 } as const;
