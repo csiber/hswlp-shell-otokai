@@ -24,7 +24,8 @@ export default function HomePage() {
     // TODO: hibakezelés a fetch hívásnál
     const res = await fetch("/api/tracks/random");
     if (res.ok) {
-      const data = await res.json();
+      const data = (await res.json()) as { track: Track };
+      // TODO: formalize API response types instead of casting
       setTrack(data.track);
       setTimeout(() => {
         audioRef.current?.play();

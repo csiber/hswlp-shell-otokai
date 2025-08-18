@@ -9,6 +9,15 @@ export async function sendVerificationEmail({ email, verificationToken, username
   console.log('sendVerificationEmail', { email, verificationToken, username });
 }
 
-export async function sendBugReportEmail({ email, message }: { email: string; message: string; }) {
-  console.log('sendBugReportEmail', { email, message });
+export async function sendBugReportEmail({
+  reporterEmail,
+  description,
+  screenshotDataUrl,
+}: {
+  reporterEmail: string;
+  description: string;
+  screenshotDataUrl?: string;
+}) {
+  // TODO: Replace log with real email sending and handle screenshot attachments if provided.
+  console.log("sendBugReportEmail", { reporterEmail, description, screenshotDataUrl });
 }
