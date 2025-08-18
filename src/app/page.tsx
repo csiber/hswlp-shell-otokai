@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Heart, Pause, Play, SkipForward } from "lucide-react";
@@ -20,6 +21,7 @@ export default function HomePage() {
   const { session } = useSessionStore();
 
   const loadRandom = async () => {
+    // TODO: hibakezelés a fetch hívásnál
     const res = await fetch("/api/tracks/random");
     if (res.ok) {
       const data = await res.json();
@@ -68,7 +70,13 @@ export default function HomePage() {
       {track && (
         <div className="text-center">
           {track.coverUrl ? (
-            <img src={track.coverUrl} alt={track.title} className="w-48 h-48 object-cover mx-auto" />
+            <Image
+              src={track.coverUrl}
+              alt={track.title}
+              width={192}
+              height={192}
+              className="w-48 h-48 object-cover mx-auto"
+            />
           ) : (
             <div className="w-48 h-48 bg-muted mx-auto" />
           )}

@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 
-export async function GET(req: Request, { params }: { params: { key: string[] } }) {
+export async function GET(req: Request, context: unknown) {
+  // TODO: részletesebb hibakezelés és naplózás
   const { env } = getCloudflareContext();
+  const { params } = context as { params: { key: string[] } };
   const key = params.key.join("/");
   const range = req.headers.get("range");
 
