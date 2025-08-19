@@ -79,22 +79,16 @@ async function handle(request: Request, params: { key: string[] }, isHead = fals
 
 export async function GET(
   request: Request,
-  context: { params: { key: string | string[] } }
+  { params }: { params: { key: string[] } }
 ) {
-  // TODO: revise once Next.js updates route handler context typing
-  const params = Array.isArray(context.params.key)
-    ? context.params.key
-    : [context.params.key];
-  return handle(request, { key: params });
+  // TODO: pontosítsuk, ha a Next.js a kontextus típusát frissíti
+  return handle(request, params);
 }
 
 export async function HEAD(
   request: Request,
-  context: { params: { key: string | string[] } }
+  { params }: { params: { key: string[] } }
 ) {
-  // TODO: revise once Next.js updates route handler context typing
-  const params = Array.isArray(context.params.key)
-    ? context.params.key
-    : [context.params.key];
-  return handle(request, { key: params }, true);
+  // TODO: pontosítsuk, ha a Next.js a kontextus típusát frissíti
+  return handle(request, params, true);
 }
