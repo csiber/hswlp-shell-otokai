@@ -25,8 +25,18 @@ async function loadFavorites(): Promise<{ ids: string[]; loggedIn: boolean }> {
 }
 
 export default async function Home({ searchParams }: { searchParams: Record<string, string> }) {
-  const [tracks, favResult] = await Promise.all([loadTracks(), loadFavorites()]);
   const showFavorites = searchParams?.favorites === "1";
+  const [tracks, favResult] = await Promise.all([loadTracks(), loadFavorites()]);
+
+  if (showFavorites && !favResult.loggedIn) {
+    // User must sign in to view favorites
+    return (
+      <main>
+        <p>Please sign in to view favorites.</p>
+      </main>
+    );
+  }
+
   const filtered = showFavorites ? tracks.filter((t) => favResult.ids.includes(t.id)) : tracks;
 
   return (
