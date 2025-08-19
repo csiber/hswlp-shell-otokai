@@ -9,19 +9,19 @@ export type Track = {
   title: string;
   artist: string;
   album?: string;
-  duration?: number; // másodpercben
+  duration?: number; // in seconds
   coverUrl: string;
   audioUrl: string;
 };
 
 interface MusicLandingProps {
   tracks: Track[];
-  initialFavorites?: string[]; // kedvenc track ID-k
+  initialFavorites?: string[]; // favorite track IDs
   userLoggedIn?: boolean;
 }
 
-// Egyszerű zenelejátszó placeholder
-// TODO: Integrálni valódi audio lejátszást később, bővítve playlist kezeléssel
+// Simple music player placeholder
+// TODO: integrate real audio playback later with playlist support
 export function MusicLanding({ tracks, initialFavorites = [], userLoggedIn }: MusicLandingProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
@@ -45,7 +45,7 @@ export function MusicLanding({ tracks, initialFavorites = [], userLoggedIn }: Mu
     setIsPlaying(!isPlaying);
   };
 
-  // Kedvenc állapot váltása
+  // Toggle favorite state
   const toggleFavorite = async () => {
     if (!userLoggedIn) return;
     const trackId = currentTrack.id;
@@ -173,7 +173,7 @@ export function MusicLanding({ tracks, initialFavorites = [], userLoggedIn }: Mu
           <input type="range" min="0" max="100" className="w-full" />
         </div>
 
-        {/* Rejtett audio elem a lejátszáshoz */}
+        {/* Hidden audio element for playback */}
         <audio ref={audioRef} src={currentTrack.audioUrl} className="hidden" />
       </div>
     </div>

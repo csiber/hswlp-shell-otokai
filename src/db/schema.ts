@@ -109,14 +109,15 @@ export const postTable = sqliteTable("post", {
 ]));
 
 // Felhasználói kedvencek táblája
-export const favoritesTable = sqliteTable("favorites", {
+// Table storing user favorites, renamed with otokai_ prefix
+export const otokaiFavouritesTable = sqliteTable("otokai_favourites", {
   id: text().primaryKey().$defaultFn(() => `fav_${createId()}`).notNull(),
   userId: text().notNull().references(() => userTable.id),
   trackId: text().notNull(),
   createdAt: integer({ mode: "timestamp" }).$defaultFn(() => new Date()).notNull(),
 }, (table) => ([
-  index('favorites_user_id_idx').on(table.userId),
-  index('favorites_track_id_idx').on(table.trackId),
+  index('otokai_favourites_user_id_idx').on(table.userId),
+  index('otokai_favourites_track_id_idx').on(table.trackId),
 ]));
 
 // Credit transaction types
@@ -388,7 +389,7 @@ export const userRelations = relations(userTable, ({ many }) => ({
   purchasedItems: many(purchasedItemsTable),
   posts: many(postTable),
   teamMemberships: many(teamMembershipTable),
-  favorites: many(favoritesTable),
+  favorites: many(otokaiFavouritesTable),
 }));
 
 export const passKeyCredentialRelations = relations(passKeyCredentialTable, ({ one }) => ({
@@ -415,4 +416,4 @@ export type TeamRole = InferSelectModel<typeof teamRoleTable>;
 export type TeamInvitation = InferSelectModel<typeof teamInvitationTable>;
 export type SlowRequestLog = InferSelectModel<typeof slowRequestLogTable>;
 export type Post = InferSelectModel<typeof postTable>;
-export type Favorite = InferSelectModel<typeof favoritesTable>;
+export type OtokaiFavourite = InferSelectModel<typeof otokaiFavouritesTable>;
