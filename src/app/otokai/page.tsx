@@ -14,9 +14,10 @@ export default function OtokaiPage() {
     fetch('/api/otokai/list')
       .then((res) => {
         if (!res.ok) throw new Error('failed');
-        return res.json();
+        // TODO: bővíteni a hibakezelést és a válasz validálását
+        return res.json() as Promise<TrackItem[]>; // a JSON típus szűkítése a további használathoz
       })
-      .then((data: TrackItem[]) => {
+      .then((data) => {
         if (!mounted) return;
         setTracks(data);
         const stored = sessionStorage.getItem('otokai-current-key');
