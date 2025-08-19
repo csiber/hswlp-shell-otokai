@@ -77,10 +77,18 @@ async function handle(request: Request, params: { key: string[] }, isHead = fals
   }
 }
 
-export async function GET(request: Request, context: { params: { key: string[] } }) {
-  return handle(request, context.params);
+export async function GET(
+  request: Request,
+  { params }: { params: { key: string[] } }
+) {
+  // TODO: pontosítsuk, ha a Next.js a kontextus típusát frissíti
+  return handle(request, params);
 }
 
-export async function HEAD(request: Request, context: { params: { key: string[] } }) {
-  return handle(request, context.params, true);
+export async function HEAD(
+  request: Request,
+  { params }: { params: { key: string[] } }
+) {
+  // TODO: pontosítsuk, ha a Next.js a kontextus típusát frissíti
+  return handle(request, params, true);
 }
