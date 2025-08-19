@@ -27,6 +27,8 @@ export function MusicLanding({ tracks, initialFavorites = [], userLoggedIn }: Mu
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [favorites, setFavorites] = useState<Set<string>>(new Set(initialFavorites));
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
 
   const currentTrack = tracks[currentTrackIndex];
@@ -47,24 +49,34 @@ export function MusicLanding({ tracks, initialFavorites = [], userLoggedIn }: Mu
 
   // Toggle favorite state
   const toggleFavorite = async () => {
-    if (!userLoggedIn) return;
+    if (!userLoggedIn || pending) return;
     const trackId = currentTrack.id;
     const fav = favorites.has(trackId);
     const method = fav ? "DELETE" : "POST";
-    await fetch("/api/favorite", {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ trackId }),
-    });
-    setFavorites((prev) => {
-      const next = new Set(prev);
-      if (fav) {
-        next.delete(trackId);
-      } else {
-        next.add(trackId);
-      }
-      return next;
-    });
+    setPending(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/favorite", {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ trackId }),
+      });
+      if (!res.ok) throw new Error("Request failed");
+      setFavorites((prev) => {
+        const next = new Set(prev);
+        if (fav) {
+          next.delete(trackId);
+        } else {
+          next.add(trackId);
+        }
+        return next;
+      });
+    } catch {
+      // TODO: integrate proper toast notifications
+      setError("Failed to update favorites.");
+    } finally {
+      setPending(false);
+    }
   };
 
   useEffect(() => {
@@ -112,7 +124,12 @@ export function MusicLanding({ tracks, initialFavorites = [], userLoggedIn }: Mu
             {currentTrack.title}
           </h2>
           {userLoggedIn && (
-            <button onClick={toggleFavorite} aria-label="Toggle favorite">
+            <button
+              onClick={toggleFavorite}
+              aria-label="Toggle favorite"
+              disabled={pending}
+              className={pending ? "opacity-50" : undefined}
+            >
               <Heart
                 className={`h-5 w-5 ${isFavorite ? "text-red-500 fill-red-500" : "text-gray-400"}`}
               />
@@ -166,6 +183,10 @@ export function MusicLanding({ tracks, initialFavorites = [], userLoggedIn }: Mu
             <span className="ml-2">-{formatTime(remaining)}</span>
           </div>
         </div>
+
+        {error && (
+          <p className="text-sm text-red-500 mt-2">{error}</p>
+        )}
 
         <div className="w-full flex items-center gap-2">
           <Volume2 className="h-5 w-5 text-gray-700 dark:text-gray-300" />

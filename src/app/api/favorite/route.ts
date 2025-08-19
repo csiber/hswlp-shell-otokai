@@ -1,47 +1,65 @@
-import { NextResponse } from "next/server";
-import { getSessionFromCookie } from "@/utils/auth";
-import { addFavorite, removeFavorite, getFavoritesByUser } from "@/db/favorites";
+import { NextResponse } from 'next/server';
+import { db } from '@/lib/db';
+import { getUser } from '@/lib/auth';
 
-// Lekéri a bejelentkezett felhasználó kedvenceit
+// GET returns list of track_id for current user's favorites
 export async function GET() {
-  const session = await getSessionFromCookie();
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const user = await getUser();
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-
-  const favorites = await getFavoritesByUser(session.user.id);
-  const ids = favorites.map((f) => f.trackId);
+  const { results } = await db
+    .prepare('SELECT track_id FROM otokai_favorites WHERE user_id = ? ORDER BY created_at DESC')
+    .bind(user.id)
+    .all<{ track_id: string }>();
+  const ids = results?.map((r) => r.track_id) ?? [];
   return NextResponse.json(ids);
 }
 
-// Kedvenc hozzáadása
+// POST adds a track to favorites in an idempotent way
 export async function POST(request: Request) {
-  const session = await getSessionFromCookie();
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const user = await getUser();
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-
-  const { trackId } = await request.json();
-  if (!trackId) {
-    return NextResponse.json({ error: "trackId required" }, { status: 400 });
+  let trackId: string | undefined;
+  try {
+    ({ trackId } = await request.json());
+  } catch {
+    // ignore parse error
   }
-
-  await addFavorite(session.user.id, trackId);
-  return NextResponse.json({ success: true });
+  if (!trackId || typeof trackId !== 'string') {
+    return NextResponse.json({ error: 'Invalid trackId' }, { status: 400 });
+  }
+  const id = `${user.id}:${trackId}`;
+  await db
+    .prepare(
+      'INSERT OR IGNORE INTO otokai_favorites (id, user_id, track_id, created_at) VALUES (?, ?, ?, ?)' 
+    )
+    .bind(id, user.id, trackId, Date.now())
+    .run();
+  return NextResponse.json({ ok: true });
 }
 
-// Kedvenc törlése
+// DELETE removes a track from favorites
 export async function DELETE(request: Request) {
-  const session = await getSessionFromCookie();
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const user = await getUser();
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-
-  const { trackId } = await request.json();
-  if (!trackId) {
-    return NextResponse.json({ error: "trackId required" }, { status: 400 });
+  let trackId: string | undefined;
+  try {
+    ({ trackId } = await request.json());
+  } catch {
+    // ignore parse error
   }
-
-  await removeFavorite(session.user.id, trackId);
-  return NextResponse.json({ success: true });
+  if (!trackId || typeof trackId !== 'string') {
+    return NextResponse.json({ error: 'Invalid trackId' }, { status: 400 });
+  }
+  const id = `${user.id}:${trackId}`;
+  await db
+    .prepare('DELETE FROM otokai_favorites WHERE id = ?')
+    .bind(id)
+    .run();
+  return NextResponse.json({ ok: true });
 }

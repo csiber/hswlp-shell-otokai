@@ -24,18 +24,20 @@ async function loadFavorites(): Promise<{ ids: string[]; loggedIn: boolean }> {
   return { ids: (await res.json()) as string[], loggedIn: true };
 }
 
-export default async function Home({
-  searchParams,
-}: {
-  searchParams: Promise<{ favorites?: string }>;
-}) {
-  // TODO: Extend query handling for additional marketing filters
-  const { favorites } = await searchParams;
+export default async function Home({ searchParams }: { searchParams: Record<string, string> }) {
+  const showFavorites = searchParams?.favorites === "1";
   const [tracks, favResult] = await Promise.all([loadTracks(), loadFavorites()]);
-  const showFavorites = favorites === "1";
-  const filtered = showFavorites
-    ? tracks.filter((t) => favResult.ids.includes(t.id))
-    : tracks;
+
+  if (showFavorites && !favResult.loggedIn) {
+    // User must sign in to view favorites
+    return (
+      <main>
+        <p>Please sign in to view favorites.</p>
+      </main>
+    );
+  }
+
+  const filtered = showFavorites ? tracks.filter((t) => favResult.ids.includes(t.id)) : tracks;
 
   return (
     <main>
