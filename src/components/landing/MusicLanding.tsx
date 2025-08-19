@@ -2,30 +2,37 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import { Play, Pause, SkipBack, SkipForward, Volume2 } from "lucide-react";
+import { Play, Pause, SkipBack, SkipForward, Volume2, Heart } from "lucide-react";
 
 export type Track = {
   id: string;
   title: string;
   artist: string;
+  album?: string;
+  duration?: number; // másodpercben
   coverUrl: string;
   audioUrl: string;
 };
 
 interface MusicLandingProps {
   tracks: Track[];
+  initialFavorites?: string[]; // kedvenc track ID-k
+  userLoggedIn?: boolean;
 }
 
 // Egyszerű zenelejátszó placeholder
 // TODO: Integrálni valódi audio lejátszást később, bővítve playlist kezeléssel
-export function MusicLanding({ tracks }: MusicLandingProps) {
+export function MusicLanding({ tracks, initialFavorites = [], userLoggedIn }: MusicLandingProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [favorites, setFavorites] = useState<Set<string>>(new Set(initialFavorites));
   const audioRef = useRef<HTMLAudioElement>(null);
 
   const currentTrack = tracks[currentTrackIndex];
   const hasPrev = currentTrackIndex > 0;
   const hasNext = currentTrackIndex < tracks.length - 1;
+  const isFavorite = favorites.has(currentTrack.id);
 
   const togglePlay = () => {
     const audio = audioRef.current;
@@ -38,6 +45,28 @@ export function MusicLanding({ tracks }: MusicLandingProps) {
     setIsPlaying(!isPlaying);
   };
 
+  // Kedvenc állapot váltása
+  const toggleFavorite = async () => {
+    if (!userLoggedIn) return;
+    const trackId = currentTrack.id;
+    const fav = favorites.has(trackId);
+    const method = fav ? "DELETE" : "POST";
+    await fetch("/api/favorite", {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ trackId }),
+    });
+    setFavorites((prev) => {
+      const next = new Set(prev);
+      if (fav) {
+        next.delete(trackId);
+      } else {
+        next.add(trackId);
+      }
+      return next;
+    });
+  };
+
   useEffect(() => {
     // TODO: Sync progress bar with actual time
     setIsPlaying(false);
@@ -46,7 +75,26 @@ export function MusicLanding({ tracks }: MusicLandingProps) {
       audio.pause();
       audio.load();
     }
+    setCurrentTime(0);
   }, [currentTrackIndex]);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    const handler = () => setCurrentTime(audio.currentTime);
+    audio.addEventListener("timeupdate", handler);
+    return () => {
+      audio.removeEventListener("timeupdate", handler);
+    };
+  }, []);
+
+  const formatTime = (sec: number) => {
+    const m = Math.floor(sec / 60);
+    const s = Math.floor(sec % 60);
+    return `${m}:${s.toString().padStart(2, "0")}`;
+  };
+
+  const remaining = currentTrack.duration ? Math.max(0, currentTrack.duration - currentTime) : 0;
 
   return (
     <div className="flex items-center justify-center min-h-screen p-4">
@@ -59,12 +107,22 @@ export function MusicLanding({ tracks }: MusicLandingProps) {
           className="w-48 h-48 object-cover rounded-md mb-4"
         />
 
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-          {currentTrack.title}
-        </h2>
-        <p className="text-gray-600 dark:text-gray-400 mb-4">
-          {currentTrack.artist}
-        </p>
+        <div className="flex items-center gap-2">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+            {currentTrack.title}
+          </h2>
+          {userLoggedIn && (
+            <button onClick={toggleFavorite} aria-label="Toggle favorite">
+              <Heart
+                className={`h-5 w-5 ${isFavorite ? "text-red-500 fill-red-500" : "text-gray-400"}`}
+              />
+            </button>
+          )}
+        </div>
+        <p className="text-gray-600 dark:text-gray-400">{currentTrack.artist}</p>
+        {currentTrack.album && (
+          <p className="text-gray-600 dark:text-gray-400 mb-4">{currentTrack.album}</p>
+        )}
 
         <div className="flex items-center gap-4 mb-4">
           <button
@@ -97,11 +155,15 @@ export function MusicLanding({ tracks }: MusicLandingProps) {
         <div className="w-full mb-2">
           {/* TODO: Progress bar should reflect actual track time */}
           <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-            <span>0:00</span>
+            <span>{formatTime(currentTime)}</span>
             <div className="flex-1 h-1 bg-gray-200 dark:bg-gray-700 rounded">
-              <div className="h-1 bg-indigo-500 w-1/4"></div>
+              <div
+                className="h-1 bg-indigo-500"
+                style={{ width: currentTrack.duration ? `${(currentTime / currentTrack.duration) * 100}%` : "0%" }}
+              ></div>
             </div>
-            <span>3:45</span>
+            <span>{currentTrack.duration ? formatTime(currentTrack.duration) : "0:00"}</span>
+            <span className="ml-2">-{formatTime(remaining)}</span>
           </div>
         </div>
 
