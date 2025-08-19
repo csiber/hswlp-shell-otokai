@@ -24,8 +24,15 @@ async function loadFavorites(): Promise<{ ids: string[]; loggedIn: boolean }> {
   return { ids: (await res.json()) as string[], loggedIn: true };
 }
 
-export default async function Home({ searchParams }: { searchParams: Record<string, string> }) {
-  const showFavorites = searchParams?.favorites === "1";
+export default async function Home({
+  searchParams,
+}: {
+  // Next.js 15 supplies search params asynchronously
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const params = await searchParams;
+  // TODO: support array values in search params if needed later
+  const showFavorites = params?.favorites === "1";
   const [tracks, favResult] = await Promise.all([loadTracks(), loadFavorites()]);
 
   if (showFavorites && !favResult.loggedIn) {
