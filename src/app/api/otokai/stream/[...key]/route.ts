@@ -77,10 +77,24 @@ async function handle(request: Request, params: { key: string[] }, isHead = fals
   }
 }
 
-export async function GET(request: Request, context: { params: { key: string[] } }) {
-  return handle(request, context.params);
+export async function GET(
+  request: Request,
+  context: { params: { key: string | string[] } }
+) {
+  // TODO: revise once Next.js updates route handler context typing
+  const params = Array.isArray(context.params.key)
+    ? context.params.key
+    : [context.params.key];
+  return handle(request, { key: params });
 }
 
-export async function HEAD(request: Request, context: { params: { key: string[] } }) {
-  return handle(request, context.params, true);
+export async function HEAD(
+  request: Request,
+  context: { params: { key: string | string[] } }
+) {
+  // TODO: revise once Next.js updates route handler context typing
+  const params = Array.isArray(context.params.key)
+    ? context.params.key
+    : [context.params.key];
+  return handle(request, { key: params }, true);
 }
