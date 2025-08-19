@@ -2,7 +2,6 @@ import { eq, and } from "drizzle-orm";
 import { getDB } from "./index";
 // NOTE: this uses the otokai_favourites table
 import { otokaiFavouritesTable } from "./schema";
-
 // Kedvencek lekérése felhasználó szerint
 export async function getFavoritesByUser(userId: string) {
   const db = getDB();
