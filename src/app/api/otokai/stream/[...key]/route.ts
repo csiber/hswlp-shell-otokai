@@ -61,7 +61,11 @@ async function handle(request: Request, params: { key: string[] }, isHead = fals
       const obj = await env.hswlp_r2.get(key, { range: { offset: range.offset, length: range.length } });
       if (!obj) return new Response("Not Found", { status: 404, headers });
       const size = obj.size;
-      const r = obj.range || { offset: range.offset, length: range.length ?? size - range.offset };
+      // Next.js build igényel explicit szűkítést az R2Range uniontípus miatt
+      const r: { offset: number; length: number } =
+        obj.range && "offset" in obj.range
+          ? { offset: obj.range.offset!, length: obj.range.length ?? size - obj.range.offset! }
+          : { offset: range.offset, length: range.length ?? size - range.offset };
       const end = r.offset + r.length - 1;
       headers.set("Content-Range", `bytes ${r.offset}-${end}/${size}`);
       headers.set("Content-Length", String(r.length));
@@ -79,16 +83,18 @@ async function handle(request: Request, params: { key: string[] }, isHead = fals
 
 export async function GET(
   request: Request,
-  { params }: { params: { key: string[] } }
+  context: { params: Promise<{ key: string[] }> }
 ) {
   // TODO: pontosítsuk, ha a Next.js a kontextus típusát frissíti
+  const params = await context.params; // Next.js 15 küldi promise-ként a paramétereket
   return handle(request, params);
 }
 
 export async function HEAD(
   request: Request,
-  { params }: { params: { key: string[] } }
+  context: { params: Promise<{ key: string[] }> }
 ) {
   // TODO: pontosítsuk, ha a Next.js a kontextus típusát frissíti
+  const params = await context.params; // Next.js 15 küldi promise-ként a paramétereket
   return handle(request, params, true);
 }
