@@ -16,12 +16,22 @@ async function loadTracks(): Promise<Track[]> {
   return (await res.json()) as Track[];
 }
 
-export default async function Home() {
-  const tracks = await loadTracks();
+async function loadFavorites(): Promise<{ ids: string[]; loggedIn: boolean }> {
+  const res = await fetch(`${SITE_URL}/api/favorite`, { cache: "no-store" });
+  if (!res.ok) {
+    return { ids: [], loggedIn: false };
+  }
+  return { ids: (await res.json()) as string[], loggedIn: true };
+}
+
+export default async function Home({ searchParams }: { searchParams: Record<string, string> }) {
+  const [tracks, favResult] = await Promise.all([loadTracks(), loadFavorites()]);
+  const showFavorites = searchParams?.favorites === "1";
+  const filtered = showFavorites ? tracks.filter((t) => favResult.ids.includes(t.id)) : tracks;
 
   return (
     <main>
-      <MusicLanding tracks={tracks} />
+      <MusicLanding tracks={filtered} initialFavorites={favResult.ids} userLoggedIn={favResult.loggedIn} />
     </main>
   );
 }
