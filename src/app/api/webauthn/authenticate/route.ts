@@ -15,7 +15,15 @@ interface AuthRequest {
 }
 
 export async function POST(request: Request) {
-  const { response, challenge } = (await request.json()) as AuthRequest
+  const body = (await request.json()) as AuthRequest
+
+  // Ellenőrizzük, hogy a kliens küldte-e az `id` mezőt
+  // TODO: további mezők validálása a jövőben
+  if (typeof body.response !== 'object' || body.response === null || typeof body.response.id !== 'string') {
+    return NextResponse.json({ success: false }, { status: 400 })
+  }
+
+  const { response, challenge } = body
 
   const { verifyAuthenticationResponse } = await import('@simplewebauthn/server')
 

@@ -129,9 +129,16 @@ export const startPasskeyRegistrationAction = createServerAction()
   });
 
 const completePasskeyRegistrationSchema = z.object({
-  response: z.custom<RegistrationResponseJSON>((val): val is RegistrationResponseJSON => {
-    return typeof val === "object" && val !== null && "id" in val && "rawId" in val;
-  }, "Invalid registration response"),
+  // Ensure the WebAuthn response includes an `id` to prevent runtime errors
+  // TODO: validate additional fields like response type
+  response: z.custom<RegistrationResponseJSON>(
+    (val): val is RegistrationResponseJSON =>
+      typeof val === "object" &&
+      val !== null &&
+      typeof (val as { id?: unknown }).id === "string" &&
+      typeof (val as { rawId?: unknown }).rawId === "string",
+    "Invalid registration response"
+  ),
 });
 
 export const completePasskeyRegistrationAction = createServerAction()
