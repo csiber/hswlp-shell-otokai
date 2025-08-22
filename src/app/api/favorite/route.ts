@@ -2,6 +2,11 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getUser } from '@/lib/auth';
 
+// TODO: consider moving this interface to a shared types module
+interface FavoriteRow {
+  track_id: string;
+}
+
 // GET returns list of track_id for current user's favorites
 export async function GET() {
   const user = await getUser();
@@ -11,8 +16,8 @@ export async function GET() {
   const { results } = await db
     .prepare('SELECT track_id FROM otokai_favorites WHERE user_id = ? ORDER BY created_at DESC')
     .bind(user.id)
-    .all<{ track_id: string }>();
-  const ids = results?.map((r) => r.track_id) ?? [];
+    .all<FavoriteRow>();
+  const ids = results?.map((r: FavoriteRow) => r.track_id) ?? [];
   return NextResponse.json(ids);
 }
 
@@ -24,7 +29,8 @@ export async function POST(request: Request) {
   }
   let trackId: string | undefined;
   try {
-    ({ trackId } = await request.json());
+    // TODO: validate incoming JSON schema
+    ({ trackId } = (await request.json()) as { trackId?: string });
   } catch {
     // ignore parse error
   }
@@ -49,7 +55,8 @@ export async function DELETE(request: Request) {
   }
   let trackId: string | undefined;
   try {
-    ({ trackId } = await request.json());
+    // TODO: validate incoming JSON schema
+    ({ trackId } = (await request.json()) as { trackId?: string });
   } catch {
     // ignore parse error
   }
