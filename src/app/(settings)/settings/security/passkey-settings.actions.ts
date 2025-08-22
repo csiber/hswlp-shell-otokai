@@ -71,9 +71,17 @@ export const generateRegistrationOptionsAction = createServerAction()
     }, RATE_LIMITS.SETTINGS);
   });
 
+// Validáció a response objektumra, hogy legyen `id` mező
+// TODO: később bővíteni további mezők ellenőrzésével
 const verifyRegistrationSchema = z.object({
   email: z.string().email(),
-  response: z.custom<RegistrationResponseJSON>(),
+  response: z.custom<RegistrationResponseJSON>(
+    (val): val is RegistrationResponseJSON =>
+      typeof val === "object" &&
+      val !== null &&
+      typeof (val as { id?: unknown }).id === "string",
+    "Invalid registration response"
+  ),
   challenge: z.string(),
 });
 

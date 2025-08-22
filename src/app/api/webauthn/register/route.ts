@@ -24,6 +24,12 @@ export async function POST(request: Request) {
   }
   const body = (await request.json()) as VerifyRequest
 
+  // Ellenőrzés: a választ tartalmaznia kell `id`-t, különben a későbbi feldolgozás hibát okoz
+  // TODO: szükség esetén bővítsük további mezők validációjával
+  if (typeof body.response !== 'object' || body.response === null || typeof body.response.id !== 'string') {
+    return NextResponse.json({ success: false }, { status: 400 })
+  }
+
   const { verifyRegistrationResponse } = await import('@simplewebauthn/server')
   const { UAParser } = await import('ua-parser-js')
 
