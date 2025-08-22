@@ -1,11 +1,12 @@
 interface HashPasswordParams {
   password: string;
-  providedSalt?: Uint8Array;
+  providedSalt?: ArrayBuffer;
 }
 
 async function hashPassword({ password, providedSalt }: HashPasswordParams) {
   const encoder = new TextEncoder();
-  const salt = providedSalt || crypto.getRandomValues(new Uint8Array(16));
+  // TODO: később a só mérete konfigurálható legyen
+  const salt = providedSalt ?? crypto.getRandomValues(new Uint8Array(16)).buffer;
 
   const keyMaterial = await crypto.subtle.importKey(
     "raw",
@@ -18,8 +19,8 @@ async function hashPassword({ password, providedSalt }: HashPasswordParams) {
   const key = await crypto.subtle.deriveKey(
     {
       name: "PBKDF2",
-      salt: salt,
-      iterations: 100000,
+      salt,
+      iterations: 100000, // TODO: állítsd be config-ból ha szükséges
       hash: "SHA-256",
     },
     keyMaterial,
@@ -34,7 +35,7 @@ async function hashPassword({ password, providedSalt }: HashPasswordParams) {
   const hashHex = Array.from(hashBuffer)
     .map((b: number) => b.toString(16).padStart(2, "0"))
     .join("");
-  const saltHex = Array.from(salt)
+  const saltHex = Array.from(new Uint8Array(salt))
     .map((b: number) => b.toString(16).padStart(2, "0"))
     .join("");
 
@@ -52,7 +53,7 @@ async function verifyPassword({ storedHash, passwordAttempt }: VerifyPasswordPar
 
   const attemptHashWithSalt = await hashPassword({
     password: passwordAttempt,
-    providedSalt: salt
+    providedSalt: salt.buffer
   });
   const [, attemptHash] = attemptHashWithSalt.split(":");
 
