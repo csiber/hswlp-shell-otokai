@@ -1,76 +1,83 @@
-# HSWLP:Next – Cloudflare alapú újgenerációs SaaS rendszer
+# Otokai – Cloudflare-Powered Music Streaming Platform
 
-Ez a repository a HSWLP platform `hswlp-shell-otokai` nevű **új alaprendszere**, amelyre a különböző frontend rétegek (ún. **shellek**) épülnek. A rendszer teljesen Cloudflare-infrastruktúrán fut (Workers, D1, R2, KV), és készen áll SaaS alkalmazások hosztolására – külön back-end nélkül.
+**Otokai** is a modern, Cloudflare-native application built on the HSWLP:Next framework.  
+It serves as a **personalized AI-driven music streaming and sharing platform**, designed for scalability and performance without the need for a traditional backend server.
 
-Ez az alap biztosítja a következőket:
-
-- Bejelentkezés, regisztráció, email hitelesítés
-- Turnstile captcha
-- Cloudflare D1 adatbázis migrációkkal
-- R2 tárhely és KV session kezelés
-- Stripe integráció és emailküldés (Resend vagy Brevo)
-- Alkalmas Cloudflare Pages és Edge funkciók kiszolgálására
+Otokai allows users to **upload, manage, and share music** directly in the browser while leveraging Cloudflare’s global infrastructure for speed and reliability.
 
 ---
 
-## Használat lokálisan
+## ✨ Key Features
 
-1. Telepítés:
+- 🔐 **Authentication & Onboarding**  
+  Sign-up, login, email verification, and Cloudflare Turnstile captcha
+
+- 🎵 **Music Upload & Playback**  
+  Upload audio files to R2 object storage and stream them instantly
+
+- 📂 **Database & Sessions**  
+  D1 database with migrations, KV for session handling
+
+- 💳 **Payments & Billing**  
+  Stripe integration for credits, subscriptions, or premium features  
+  Email notifications via Resend or Brevo
+
+- ☁️ **Cloud-Optimized Deployment**  
+  Built entirely on Cloudflare Workers, R2, D1, and KV  
+  No external backend required
+
+---
+
+## 🚀 Getting Started (Local Development)
+
+1. **Install dependencies**
 
    ```bash
    pnpm install
-   ```
 
-2. Környezeti változók:
+2. **Configure environment variables**
+   Copy `.env.example` to `.env` and fill in your values.
+   (For local dev, also copy `.dev.vars.example` → `.dev.vars`)
 
-   - Másold le a `.env.example` fájlt `.env` néven, majd töltsd ki.
-   - Ha használod: `.dev.vars.example` → `.dev.vars`
-
-3. Lokális migráció és indítás:
+3. **Run migrations and start the dev server**
 
    ```bash
    pnpm db:migrate:dev
    pnpm dev
    ```
 
-4. Nyisd meg a böngészőben:
-   [http://localhost:3000](http://localhost:3000)
+4. Open [http://localhost:3000](http://localhost:3000)
 
 ---
 
-## Cloudflare deploy
+## ☁️ Deployment to Cloudflare
 
-A rendszer automatikusan deployolható Cloudflare Workers-re:
+Deploy in one step:
 
 ```bash
 pnpm run deploy
 ```
 
-Ez lefuttatja az `opennext:build` és `opennextjs-cloudflare deploy` parancsokat, majd feltölti:
+This will:
 
-- a Worker kódot
-- statikus asseteket (R2)
-- titkos környezeti változókat (`wrangler secret put`)
-- valamint a `wrangler.json` alapján hozzárendeli:
-  - D1 adatbázist
-  - KV namespace-eket
-  - R2 bucketet
+* Build the Worker
+* Upload static assets (R2)
+* Bind secrets, database, KV, and buckets via Wrangler
 
-A `.env` fájl NEM kerül automatikusan feltöltésre – a titkos adatokat külön kell beállítani `wrangler secret put` paranccsal vagy a Cloudflare dashboardon.
+> ⚠️ Secrets must be configured manually with
+> `wrangler secret put` or in the Cloudflare dashboard.
 
 ---
 
-## Fontos konfigurációs helyek
+## 📂 Project Structure
 
-- Állandók: `src/constants.ts`
-- Email sablonok: `src/react-email/`
-- Globális CSS: `src/app/globals.css`
-- Meta adatok: `src/app/layout.tsx`
-- Wrangler config: `wrangler.json`
+* `src/constants.ts` → configuration constants
+* `src/react-email/` → email templates
+* `src/app/globals.css` → global styles
+* `src/app/layout.tsx` → metadata & layout
+* `wrangler.json` → Worker configuration
 
----
-
-## Email sablonok előnézete
+Preview email templates locally:
 
 ```bash
 pnpm email:dev
@@ -80,17 +87,28 @@ pnpm email:dev
 
 ---
 
-## A rendszer jövője
+## 🎶 About Otokai
 
-A `hswlp-shell-otokai` az alapja minden jövőbeli HSWLP shellnek, ideértve:
+Otokai is more than just a music player — it’s a **community-driven jukebox**:
 
-- `HSWLP:Cloud` (statikus site deploy)
-- `HSWLP:NAS` (helyi Docker stack manager)
-- `HSWLP:Dev` (fejlesztői központ)
-- `HSWLP:Store` (sablon piactér)
-- `HSWLP:Academy` (oktatási modul)
+* Upload and share your own tracks
+* Create playlists and favorites
+* Discover new music from other users
+* Earn or spend credits for premium features
 
-Egy közös rendszer, több célra.
-Tisztán, Cloudflare-alapon.
+Built on the HSWLP\:Next foundation, Otokai demonstrates how Cloudflare’s edge technology can power modern, interactive SaaS products.
 
 ---
+
+## 🛠️ Roadmap
+
+Planned features for Otokai:
+
+* 📱 Mobile-first responsive design
+* 🎨 User playlists with artwork and customization
+* 👥 Social features (likes, comments, shares)
+* 🔍 AI-powered recommendations
+* 🛒 Marketplace integration for tracks & samples
+
+**One platform, many possibilities.
+Built cleanly, built on Cloudflare.**
